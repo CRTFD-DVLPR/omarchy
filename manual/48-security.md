@@ -26,14 +26,14 @@ Be clear-eyed about this one: while it's on, anything running as your user can d
 
 ## Customizing the kernel command line
 
-If you want to add your own kernel parameters — say, `lsm=landlock,lockdown,yama,apparmor,bpf` to turn on AppArmor — don't edit `/etc/kernel/cmdline`. Omarchy's boot tooling doesn't read it, so anything you put there is silently ignored. The cmdline that actually ends up in the signed UKI is assembled by `limine-entry-tool`/`limine-update` from `KERNEL_CMDLINE[default]` in `/etc/default/limine` plus any drop-ins under `/etc/limine-entry-tool.d/*.conf`. Add your own drop-in there instead, then rebuild and reboot:
+If you want to add your own kernel parameters — say, `lsm=landlock,lockdown,yama,apparmor,bpf` to turn on AppArmor — don't edit `/etc/kernel/cmdline`. Omarchy's boot tooling doesn't read it, so anything you put there is silently ignored. The command line Omarchy actually boots with is assembled by `limine-entry-tool`/`limine-update` from `KERNEL_CMDLINE[default]` in `/etc/default/limine` plus any drop-ins under `/etc/limine-entry-tool.d/*.conf`. Add your own drop-in there instead, then rebuild and reboot:
 
 ```
-printf '%s\n' 'KERNEL_CMDLINE[default]+=" your-param=here"' | sudo tee /etc/limine-entry-tool.d/zz-custom.conf
+printf '%s\n' 'KERNEL_CMDLINE[default]+=" your-param=here"' | sudo tee /etc/limine-entry-tool.d/custom.conf
 sudo limine-update
 ```
 
-Name your file with a `zz-` prefix so it's applied after Omarchy's own drop-ins (sudoers.d-style lexical ordering applies here too). After rebooting, confirm with `cat /proc/cmdline`.
+Any name ending in `.conf` works. This is for adding parameters: don't count on a drop-in's name to override one Omarchy already sets, like `loglevel`, because `limine-entry-tool` places drop-ins on the command line in reverse name order, so a `zz-` file lands before Omarchy's defaults rather than after them. After rebooting, confirm with `cat /proc/cmdline`.
 
 ## Signing Keys
 
